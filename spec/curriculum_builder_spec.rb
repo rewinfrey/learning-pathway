@@ -7,11 +7,6 @@ describe CurriculumBuilder do
 
   subject { described_class.new(domain_order_file_path, student_tests_file_path) }
 
-  xit "builds a satisfactory curriculum plan" do
-    solution = subject.plan
-    expect(solution).to eq(given_solution)
-  end
-
   describe "#domain_transition_map" do
     it "builds a hash map illustrating the domain transitions" do
       expected_domain_transition_map =  {
@@ -31,7 +26,7 @@ describe CurriculumBuilder do
   end
 
   describe "#domain_order_map" do
-    it "builds a hash map illustrating the domain standard progression" do
+    it "builds a hash map illustrating the progression of domains and their standards" do
       expected_domain_order_map = {
         "K.RF"=>"K.RL", "K.RL"=>"K.RI", "K.RI"=>"1.RF", "1.RF"=>"1.RL",
         "1.RL"=>"1.RI", "1.RI"=>"2.RF", "2.RF"=>"2.RI", "2.RI"=>"2.RL",
@@ -44,6 +39,42 @@ describe CurriculumBuilder do
       domain_order_map = subject.domain_order_map
 
       expect(domain_order_map).to eq(expected_domain_order_map)
+    end
+  end
+
+  describe "#plan" do
+    xit "builds a satisfactory curriculum plan" do
+      solution = subject.plan
+      expect(solution).to eq(given_solution)
+    end
+  end
+
+  describe "#minimum_domain_standard?" do
+    it "returns true if the test standard and test domain occur prior to the base standard and base domain" do
+      test_domain = "K"
+      test_standard = "RI"
+      base_domain = "2"
+      base_standard = "RF"
+
+      result = subject.minimum_domain_standard?(test_standard, test_domain, base_standard, base_domain)
+
+      expect(result).to be_truthy
+    end
+  end
+
+  describe "#minimum_domain_standard" do
+    it "returns the minimum domain and standard for a given student's test scores" do
+      standard_domain_map = {
+        "RF" => "2",
+        "RL" => "3",
+        "RI" => "K",
+        "L" => "3"
+      }
+
+      minimum_map = subject.minimum_domain_standard(standard_domain_map)
+
+      expect(minimum_map[:minimum_domain]).to eq("K")
+      expect(minimum_map[:minimum_standard]).to eq("RI")
     end
   end
 end

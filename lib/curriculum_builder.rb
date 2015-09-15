@@ -20,7 +20,7 @@ class CurriculumBuilder
 
   def initialize(domain_order_file_path, student_tests_file_path)
     @domain_order_file_path = domain_order_file_path
-    @studnet_tests_file_path = student_tests_file_path
+    @student_tests_file_path = student_tests_file_path
   end
 
   def plan
@@ -35,7 +35,51 @@ class CurriculumBuilder
     @domain_order_map ||= generate_domain_order_map
   end
 
+  def minimum_domain_standard(student_standards_domain_map)
+    student_standards_domain_map.reduce({}) do |minimum_map, standard_domain|
+      standard, domain = standard_domain
+      minimum_map[:minimum_standard] ||= standard
+      minimum_map[:minimum_domain]   ||= domain
+
+      if minimum_domain_standard?(standard, domain, minimum_map[:minimum_standard], minimum_map[:minimum_domain])
+        minimum_map = {
+          :minimum_standard => standard,
+          :minimum_domain   => domain
+        }
+      end
+
+      minimum_map
+    end
+  end
+
+  def minimum_domain_standard?(test_standard, test_domain, base_standard, base_domain)
+    earlier_domain?(test_domain, base_domain) || earlier_domain_standard?(test_domain, test_standard, base_domain, base_standard)
+  end
+
   private
+
+  def earlier_domain?(test_domain, base_domain)
+    domain_to_integer(test_domain) < domain_to_integer(base_domain)
+  end
+
+  def earlier_domain_standard?(test_domain, test_standard, base_domain, base_standard)
+    next_domain_standard = domain_order_map["#{test_domain}.#{test_standard}"]
+
+    # guard against domain / standard combinations that are not within the provided sequence
+    return false if next_domain_standard.nil?
+
+    test_domain, test_standard = next_domain_standard.split(".")
+
+    # decided to use a while loop rather than recurse (not sure how many standards might ever be in a domain and don't want to risk blowing the stack)
+    while((test_domain == base_domain) && ((test_standard != base_standard))) do
+      test_domain, test_standard = domain_order_map["#{test_domain}.#{test_standard}"].split(".")
+    end
+
+    # returns true for a domain / standard combination that matches the same domain as the base_domain and the standard matches the base_standard
+    # (indicating that the test_standard occurs before the base_standard in the supplied domain / standard sequence)
+    # otherwise returns false meaning that the test_domain / test_standard do not occur prior to the base_domain / base_standard in the provided sequence
+    return (test_domain == base_domain && test_standard == base_standard)
+  end
 
   def generate_domain_transition_map
     domains = []
@@ -49,7 +93,7 @@ class CurriculumBuilder
     end
 
     sorted_domains.each_with_index.reduce({}) do |transition_map, (domain, index)|
-      transition_map[domain] = sorted_domains[index + 1]
+      transition_map[domain] = sorted_domains[index.next]
       transition_map
     end
   end
