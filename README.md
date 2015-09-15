@@ -1,3 +1,66 @@
+### Learning Pathway
+
+### Setup
+
+```
+$ git clone https://github.com/rewinfrey/learning_pathway.git
+$ cd learning_pathway
+$ bundle
+```
+
+### Run Tests
+
+```
+$ cd learning_pathway
+$ bundle exec rspec
+```
+
+### Run Program
+
+```
+$ cd learning_pathway
+$ bin/plan data/domain_order.csv data/student_tests.csv
+```
+
+### Approach
+
+To start, I decided that a graph-like data structure would allow me to easily figure
+out the next domain / standard for a given student. I opted to use a hash map, whose
+keys are a domain / standard, and whose value represents its proceeding domain / standard.
+I refer to this structure in the code as the `domain_order_map` and is constructed
+via the `DomainMapper` class.
+
+Depending on the `DomainMapper` class is the `CurriculumBuilder` class. The `CurriculumBuilder`
+has a single public method named `plan`. Despite the final version of `CurriculumBulder`
+containing a single public method, the majority of the heavy lifting occurs within
+private methods. The majority of those methods were initially test-driven and those
+tests / steps can be found in the git log.
+
+To build up the learning pathway, I chose to first determine the starting
+domain / standard for a given student's test scores. From there, I used the `domain_order_map`
+to determine the next possible domain / standard combination, and verify if that next
+domain / standard combination is applicable for the student given their test scores.
+If the student has not yet mastered that domain / stadandard the algorithm adds it to the student's
+curriculum. If the student has mastered that domain / standard the algorithm continues traversing
+through the `domain_order_map` until the next applicable domain / standard for that
+student is found. This process repeats until the curriculum length for that student reaches
+the maximum size (5), or the end of the `domain_order_map` is reached. A student data structure
+is returned containing the student's name and learning pathway. The algorithm iterates over each
+student until a curriculum has been built for all students.
+
+I strove to make this code as generic as possible to support as many different types
+of input as I could imagine. I left comments in the code in areas that I thought
+were interesting, or helped to further explain my intention if this were part of
+larger application.
+
+I paid special attention to computational space by using `CSV.foreach` rather than `CSV.read`
+to prevent loading potentially large CSV files into memory. I memoized results when possible,
+and when iterating over collections tried to optimistically locate the target with a fall back
+to a pessimistic enumeration if necessary. The worst case computational complexity for portions
+of the algorithm is O(n^2).
+
+I look forward to hearing feedback from the team!
+
 == Setup ==
 
 Our mission is to provide the best learning experiences to students, personalized
