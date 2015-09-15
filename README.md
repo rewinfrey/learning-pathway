@@ -71,7 +71,7 @@ were interesting, or helped to further explain my intention if this were part of
 larger application.
 
 I paid special attention to computational space by using `CSV.foreach` rather than `CSV.read`
-to prevent loading potentially large CSV files into memory. I memoized results when possible,
+when possible to prevent loading potentially large CSV files into memory. I memoized results when possible,
 and when iterating over collections tried to optimistically locate the target with a fall back
 to a pessimistic enumeration if necessary. The worst case computational complexity for portions
 of the algorithm is O(n^2).
