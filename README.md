@@ -78,6 +78,8 @@ of the algorithm is O(n^2).
 
 This was a fun and interesting challenge, and I look forward to hearing feedback from the team!
 
+---
+
 == Setup ==
 
 Our mission is to provide the best learning experiences to students, personalized
