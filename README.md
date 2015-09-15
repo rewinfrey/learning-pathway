@@ -28,7 +28,18 @@ To start, I decided that a graph-like data structure would allow me to easily fi
 out the next domain / standard for a given student. I opted to use a hash map, whose
 keys are a domain / standard, and whose value represents its proceeding domain / standard.
 I refer to this structure in the code as the `domain_order_map` and is constructed
-via the `DomainMapper` class.
+via the `DomainMapper` class:
+
+```ruby
+{
+  "K.RF"=>"K.RL",
+  "K.RL"=>"K.RI",
+  "K.RI"=>"1.RF",
+  ...
+  "6.RI"=>"6.RL",
+  "6.RL"=>nil
+}
+```
 
 Depending on the `DomainMapper` class is the `CurriculumBuilder` class. The `CurriculumBuilder`
 has a single public method named `plan`. Despite the final version of `CurriculumBulder`
@@ -46,7 +57,13 @@ through the `domain_order_map` until the next applicable domain / standard for t
 student is found. This process repeats until the curriculum length for that student reaches
 the maximum size (5), or the end of the `domain_order_map` is reached. A student data structure
 is returned containing the student's name and learning pathway. The algorithm iterates over each
-student until a curriculum has been built for all students.
+student until a curriculum has been built for all students:
+
+```ruby
+[["Albin Stanton", "K.RI", "1.RI", "2.RF", "2.RI", "3.RF"],
+ ["Erik Purdy", "1.RL", "1.RI", "2.RI", "2.RL", "2.L"],
+ ["Aimee Cole", "K.RF", "K.RL", "1.RF", "1.RL", "1.RI"], ...]
+```
 
 I strove to make this code as generic as possible to support as many different types
 of input as I could imagine. I left comments in the code in areas that I thought
@@ -59,7 +76,7 @@ and when iterating over collections tried to optimistically locate the target wi
 to a pessimistic enumeration if necessary. The worst case computational complexity for portions
 of the algorithm is O(n^2).
 
-I look forward to hearing feedback from the team!
+This was a fun and interesting challenge, and I look forward to hearing feedback from the team!
 
 == Setup ==
 
