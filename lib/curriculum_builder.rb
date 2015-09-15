@@ -23,7 +23,8 @@ class CurriculumBuilder
       next if headers == row
 
       student_map = student_map(headers, row)
-      student_map[:curriculum] = build_curriculum(student_map.merge(minimum_domain_standard(student_map[:standard_domain_map])))
+      minimum_domain_map = minimum_domain_standard(student_map[:standard_domain_map])
+      student_map[:curriculum] = build_curriculum(student_map.merge(minimum_domain_map))
 
       student_maps << student_map
     end
@@ -72,29 +73,29 @@ class CurriculumBuilder
   end
 
   def minimum_domain_standard(student_standards_domain_map)
+    # Return immediately with first domain / standard from the domain order map
+    # for a new student (student with no scores)
     if new_student?(student_standards_domain_map)
       domain, standard = domain_order_map.keys.first.split(".")
-      return {
-        :minimum_standard => standard,
-        :minimum_domain => domain
-      }
+      return build_minimum_map(domain, standard)
     end
 
     student_standards_domain_map.reduce({}) do |minimum_map, standard_domain|
       standard, domain = most_applicable_domain_standard(standard_domain)
 
-      minimum_map[:minimum_standard] ||= standard
-      minimum_map[:minimum_domain]   ||= domain
-
-      if minimum_domain_standard?(standard, domain, minimum_map[:minimum_standard], minimum_map[:minimum_domain])
-        minimum_map = {
-          :minimum_standard => standard,
-          :minimum_domain   => domain
-        }
+      if minimum_map.empty? || minimum_domain_standard?(standard, domain, minimum_map[:minimum_standard], minimum_map[:minimum_domain])
+        minimum_map = build_minimum_map(domain, standard)
       end
 
       minimum_map
     end
+  end
+
+  def build_minimum_map(domain, standard)
+    {
+      :minimum_domain => domain,
+      :minimum_standard => standard
+    }
   end
 
   def new_student?(student_standards_domain_map)
