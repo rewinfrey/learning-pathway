@@ -26,10 +26,6 @@ class CurriculumBuilder
     @student_tests_file_path = student_tests_file_path
   end
 
-  def plan
-    []
-  end
-
   def domain_transition_map
     @domain_transition_map ||= generate_domain_transition_map
   end
@@ -38,25 +34,19 @@ class CurriculumBuilder
     @domain_order_map ||= generate_domain_order_map
   end
 
-  def minimum_domain_standard(student_standards_domain_map)
-    student_standards_domain_map.reduce({}) do |minimum_map, standard_domain|
-      standard, domain = standard_domain
-      minimum_map[:minimum_standard] ||= standard
-      minimum_map[:minimum_domain]   ||= domain
+  def plan
+    student_maps = []
+    headers = nil
+    CSV.foreach(student_tests_file_path) do |row|
+      headers ||= row
+      next if headers == row
 
-      if minimum_domain_standard?(standard, domain, minimum_map[:minimum_standard], minimum_map[:minimum_domain])
-        minimum_map = {
-          :minimum_standard => standard,
-          :minimum_domain   => domain
-        }
-      end
+      student_map = student_map(headers, row)
+      student_map[:curriculum] = build_curriculum(student_map.merge(minimum_domain_standard(student_map[:standard_domain_map])))
 
-      minimum_map
+      student_maps << student_map
     end
-  end
-
-  def minimum_domain_standard?(test_standard, test_domain, base_standard, base_domain)
-    earlier_domain?(test_domain, base_domain) || earlier_domain_standard?(test_domain, test_standard, base_domain, base_standard)
+    student_maps.map { |student| [student[headers.first], [student[:curriculum]]].flatten }
   end
 
   def build_curriculum(student_map)
@@ -75,7 +65,59 @@ class CurriculumBuilder
     curriculum
   end
 
+  def minimum_domain_standard(student_standards_domain_map)
+    student_standards_domain_map.reduce({}) do |minimum_map, standard_domain|
+      standard, domain = most_applicable_domain_standard(standard_domain)
+
+      minimum_map[:minimum_standard] ||= standard
+      minimum_map[:minimum_domain]   ||= domain
+
+      if minimum_domain_standard?(standard, domain, minimum_map[:minimum_standard], minimum_map[:minimum_domain])
+        minimum_map = {
+          :minimum_standard => standard,
+          :minimum_domain   => domain
+        }
+      end
+
+      minimum_map
+    end
+  end
+
+  def minimum_domain_standard?(test_standard, test_domain, base_standard, base_domain)
+    earlier_domain?(test_domain, base_domain) ||
+      earlier_domain_standard?(test_domain, test_standard, base_domain, base_standard)
+  end
+
   private
+
+  def most_applicable_domain_standard(standard_domain)
+    standard, domain = standard_domain
+    # Return immediately if the given standard and domain exist within the given domain order
+    return([standard, domain]) if domain_standard_exists?(domain, standard)
+
+    temp_domain = domain
+    while(temp_domain != nil) do
+      temp_domain = domain_transition_map[temp_domain]
+      break if domain_standard_exists?(temp_domain, standard)
+    end
+
+    if temp_domain == nil
+      return [standard, domain]
+    else
+      return [standard, temp_domain]
+    end
+  end
+
+  def domain_standard_exists?(domain, standard)
+    domain_order_map.has_key?("#{domain}.#{standard}")
+  end
+
+  def student_map(student_headers, student_record)
+    {
+      student_headers.first => student_record.first,
+      :standard_domain_map => Hash[student_headers[1..-1].zip(student_record[1..-1])]
+    }
+  end
 
   def domain_standard_applicable?(domain_standard, student_standard_domain_map)
     return false unless domain_standard

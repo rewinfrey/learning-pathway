@@ -43,7 +43,7 @@ describe CurriculumBuilder do
   end
 
   describe "#plan" do
-    xit "builds a satisfactory curriculum plan" do
+    it "builds a satisfactory curriculum plan" do
       solution = subject.plan
       expect(solution).to eq(given_solution)
     end
@@ -75,6 +75,20 @@ describe CurriculumBuilder do
 
       expect(minimum_map[:minimum_domain]).to eq("K")
       expect(minimum_map[:minimum_standard]).to eq("RI")
+    end
+
+    it "ensures the minimum domain and standard are valid according to the given domain order" do
+      invalid = { "L" => "K" }
+      standard_domain_map = {
+        "RF" => "2",
+        "RL" => "3",
+        "RI" => "3"
+      }.merge(invalid)
+
+      minimum_map = subject.minimum_domain_standard(standard_domain_map)
+
+      expect(minimum_map[:minimum_domain]).to eq("2")
+      expect(minimum_map[:minimum_standard]).to eq("RF")
     end
   end
 
