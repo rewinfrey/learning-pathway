@@ -72,6 +72,14 @@ class CurriculumBuilder
   end
 
   def minimum_domain_standard(student_standards_domain_map)
+    if new_student?(student_standards_domain_map)
+      domain, standard = domain_order_map.keys.first.split(".")
+      return {
+        :minimum_standard => standard,
+        :minimum_domain => domain
+      }
+    end
+
     student_standards_domain_map.reduce({}) do |minimum_map, standard_domain|
       standard, domain = most_applicable_domain_standard(standard_domain)
 
@@ -87,6 +95,10 @@ class CurriculumBuilder
 
       minimum_map
     end
+  end
+
+  def new_student?(student_standards_domain_map)
+    student_standards_domain_map.values.compact.empty?
   end
 
   def minimum_domain_standard?(test_standard, test_domain, base_standard, base_domain)
