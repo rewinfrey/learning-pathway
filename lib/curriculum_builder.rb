@@ -69,7 +69,9 @@ class CurriculumBuilder
         if next_standard = next_standard_for_row(domain_row, domain_or_standard_index.next)
           domain_order_map["#{domain}.#{standard}"] = "#{domain}.#{next_standard}"
         elsif next_domain = domain_transition_map[domain]
-          next_domain_row = next_domain_row_for_domain(next_domain, domain_order, domain_order_index)
+          # I did not want to assume the domain order csv would
+          # list domains in the correct oder.
+          next_domain_row = next_domain_row_for_target_domain(next_domain, domain_order, domain_order_index.next)
           domain_order_map["#{domain}.#{standard}"] = "#{next_domain}.#{next_standard_for_row(next_domain_row, 0)}"
         else
           domain_order_map["#{domain}.#{standard}"] = nil
@@ -91,8 +93,12 @@ class CurriculumBuilder
     domain_standard_row[(index)..-1].find { |domain_or_standard| !domain?(domain_or_standard) }
   end
 
-  def next_domain_row_for_domain(target_domain, domain_order, domain_order_index)
-    domain_order[domain_order_index..-1].find { |domain_row| domain_for_row(domain_row) == target_domain }
+  def next_domain_row_for_target_domain(target_domain, domain_order, domain_order_index)
+    # Optimistic lookup of target domain assuming domain order csv lists domains in correct order
+    next_domain_row = domain_order[(domain_order_index)..-1].find { |domain_row| domain_for_row(domain_row) == target_domain }
+    return next_domain_row if next_domain_row
+    # Pessimistic lookup of target domain if optimistic lookup fails
+    next_domain_row= domain_order.find { |domain_row| domain_for_row(domain_row) == target_domain }
   end
 
   def domain_to_integer(domain)
