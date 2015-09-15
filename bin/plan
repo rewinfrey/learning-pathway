@@ -1,0 +1,10 @@
+#! /usr/bin/env ruby
+
+$:.unshift File.expand_path('../../lib', __FILE__)
+
+require 'pp'
+require 'curriculum_builder'
+
+raise "Usage: bin/plan path_to_domain_order.csv path_to_student_tests.csv" if ARGV.count < 2
+
+pp CurriculumBuilder.new(ARGV[0], ARGV[1]).plan
