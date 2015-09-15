@@ -17,6 +17,7 @@ class CurriculumBuilder
   def plan
     student_maps = []
     headers = nil
+
     CSV.foreach(student_tests_file_path) do |row|
       headers ||= row
       next if headers == row
@@ -26,11 +27,18 @@ class CurriculumBuilder
 
       student_maps << student_map
     end
+
     student_maps.map { |student| [student[headers.first], [student[:curriculum]]].flatten }
   end
 
   private
 
+  # Ideally, passing this dependency in via the constructor makes
+  # it easier to test against (where applicable), and enables the ability
+  # for CurriculumBuilder to depend on different types of domain mapper
+  # abstractions (dependency inversion principle) at run time in the event
+  # that some domain orders require special logic not supported by
+  # the generic DomainMapper class.
   def domain_mapper
     @domain_mapper ||= DomainMapper.new(domain_order_file_path)
   end
