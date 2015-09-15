@@ -29,6 +29,8 @@ class CurriculumBuilder
     student_maps.map { |student| [student[headers.first], [student[:curriculum]]].flatten }
   end
 
+  private
+
   def domain_mapper
     @domain_mapper ||= DomainMapper.new(domain_order_file_path)
   end
@@ -39,6 +41,10 @@ class CurriculumBuilder
 
   def domain_order_map
     domain_mapper.domain_order_map
+  end
+
+  def domain_to_integer(domain)
+    domain_mapper.domain_to_integer(domain)
   end
 
   def build_curriculum(student_map)
@@ -79,8 +85,6 @@ class CurriculumBuilder
     earlier_domain?(test_domain, base_domain) ||
       earlier_domain_standard?(test_domain, test_standard, base_domain, base_standard)
   end
-
-  private
 
   def most_applicable_domain_standard(standard_domain)
     standard, domain = standard_domain
@@ -138,9 +142,5 @@ class CurriculumBuilder
     # (indicating that the test_standard occurs before the base_standard in the supplied domain / standard sequence)
     # otherwise returns false meaning that the test_domain / test_standard do not occur prior to the base_domain / base_standard in the provided sequence
     return (test_domain == base_domain && test_standard == base_standard)
-  end
-
-  def domain_to_integer(domain)
-    domain_mapper.domain_to_integer(domain)
   end
 end
