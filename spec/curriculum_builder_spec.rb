@@ -77,4 +77,25 @@ describe CurriculumBuilder do
       expect(minimum_map[:minimum_standard]).to eq("RI")
     end
   end
+
+  describe "#build_curriculum" do
+    it "returns a curriculum plan for a given student's scores" do
+      student_map = {
+        "Student Name" => "Albin Stanton",
+        :minimum_domain => "K",
+        :minimum_standard => "RI",
+        :standard_domain_map => {
+          "RF" => "2",
+          "RL" => "3",
+          "RI" => "K",
+          "L" => "3"
+        }
+      }
+      expected_plan = ["K.RI", "1.RI", "2.RF", "2.RI", "3.RF"]
+
+      curriculum_plan = subject.build_curriculum(student_map)
+
+      expect(curriculum_plan).to eq(expected_plan)
+    end
+  end
 end

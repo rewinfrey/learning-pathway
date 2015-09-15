@@ -18,6 +18,9 @@ class CurriculumBuilder
     "K" => 0
   }
 
+  # Same configurability comment as DOMAIN_POSITION and DOMAIN_TO_INTEGER
+  MAXIMUM_CURRICULUM_LENGTH = 5
+
   def initialize(domain_order_file_path, student_tests_file_path)
     @domain_order_file_path = domain_order_file_path
     @student_tests_file_path = student_tests_file_path
@@ -56,7 +59,29 @@ class CurriculumBuilder
     earlier_domain?(test_domain, base_domain) || earlier_domain_standard?(test_domain, test_standard, base_domain, base_standard)
   end
 
+  def build_curriculum(student_map)
+    curriculum = []
+    applicable = true
+    domain_standard = "#{student_map[:minimum_domain]}.#{student_map[:minimum_standard]}"
+
+    while(curriculum.count < MAXIMUM_CURRICULUM_LENGTH && domain_standard) do
+      curriculum << domain_standard if applicable
+
+      domain_standard = domain_order_map[domain_standard]
+
+      applicable = domain_standard_applicable?(domain_standard, student_map[:standard_domain_map])
+    end
+
+    curriculum
+  end
+
   private
+
+  def domain_standard_applicable?(domain_standard, student_standard_domain_map)
+    return false unless domain_standard
+    domain, standard = domain_standard.split(".")
+    domain_to_integer(student_standard_domain_map[standard]) <= domain_to_integer(domain)
+  end
 
   def earlier_domain?(test_domain, base_domain)
     domain_to_integer(test_domain) < domain_to_integer(base_domain)
